@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define _GPERF_PROFILER
+// #define _GPERF_PROFILER
 
 #ifdef _GPERF_PROFILER
 #include <gperftools/profiler.h>
