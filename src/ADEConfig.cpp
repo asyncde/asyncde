@@ -151,7 +151,7 @@ int asyncde::ADEConfig::SetStrategy(const std::string &strategyname) {
       break;
     case ADE_CROSSOVER_BIN:
     default:
-      CRupdatetype = ADE_CROSSOVER_UPDATE_jDE;
+      CRupdatetype = ADE_CROSSOVER_UPDATE_CRCauchy;
     }
 
     if (MinPopSize() < MinimalADEPopulationSize())
@@ -246,19 +246,19 @@ int asyncde::ADEConfig::Print(FILE *stream) const {
                                 Fscaletype, Fmin, Fmax, tauF)))
       return retvalue;
     break;
-  case ADE_FSCALE_FCauchy:
-    if (0 >
-        (retvalue = fprintf(stream, "F=Cauchy(%.5e, %.5e) in [%.5e, %.5e]\n",
-                            Fmu, Fsigma, Fmin, Fmax)))
-      return retvalue;
-    break;
   case ADE_FSCALE_JADE:
-  default:
     if (0 >
         (retvalue = fprintf(
              stream,
              "F=Cauchy(%.5e, %.5e) in [%.5e, %.5e] Fmu adapted with cF=%.5e\n",
              Fmu, Fsigma, Fmin, Fmax, Fc)))
+      return retvalue;
+    break;
+  case ADE_FSCALE_FCauchy:
+  default:
+    if (0 >
+        (retvalue = fprintf(stream, "F=Cauchy(%.5e, %.5e) in [%.5e, %.5e]\n",
+                            Fmu, Fsigma, Fmin, Fmax)))
       return retvalue;
   }
 
@@ -268,12 +268,6 @@ int asyncde::ADEConfig::Print(FILE *stream) const {
                                 tauCorr, wCR)))
       return retvalue;
     break;
-  case ADE_CROSSOVER_UPDATE_CRCauchy:
-    if (0 >
-        (retvalue = fprintf(stream, "CR=Cauchy(%.5e, %.5e) in [%.5e, %.5e]\n",
-                            CRmu, CRsigma, CRmin, CRmax)))
-      return retvalue;
-    break;
   case ADE_CROSSOVER_UPDATE_JADE:
     if (0 > (retvalue =
                  fprintf(stream, "CR=N(%.5e, %.5e) in [%.5e, %.5e] cCR=%.5e\n",
@@ -281,10 +275,17 @@ int asyncde::ADEConfig::Print(FILE *stream) const {
       return retvalue;
     break;
   case ADE_CROSSOVER_UPDATE_jDE:
-  default:
     if (0 > (retvalue = fprintf(stream, "CR in [%.5e, %.5e] tauCR=%.5e\n",
                                 CRmin, CRmax, tauCR)))
       return retvalue;
+    break;
+  case ADE_CROSSOVER_UPDATE_CRCauchy:
+  default:
+    if (0 >
+        (retvalue = fprintf(stream, "CR=Cauchy(%.5e, %.5e) in [%.5e, %.5e]\n",
+                            CRmu, CRsigma, CRmin, CRmax)))
+      return retvalue;
+    break;
   }
 
   switch (selectiontype) {
