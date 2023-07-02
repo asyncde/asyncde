@@ -185,7 +185,7 @@ protected:
 
   /// uniform (binomial) crossover, returns number of free coordinates selected
   /// from the mutant vector
-  int CrossoverMaskUniform(const double CR, std::vector<char> &mask);
+  int CrossoverMaskUniform(double CR, std::vector<char> &mask);
 
   /// set crossover mask for _point
   virtual int CrossoverMask(const ADEPoint &target_point, ADEPoint &_point);
