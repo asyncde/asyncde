@@ -891,8 +891,8 @@ int asyncde::CDEIterator::AssignVector(const int vector_type,
 
 /*
 // classical crossover O(nfreeparams)
-int asyncde::CDEIterator::CrossoverMaskUniform(double CR,
-                                               std::vector<char> &mask) const {
+int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
+                                               std::vector<char> &mask) {
   int nmutantcoords = nfreeparams;
 
   if (nfreeparams < 1) {
@@ -900,33 +900,32 @@ int asyncde::CDEIterator::CrossoverMaskUniform(double CR,
     return -2;
   }
 
-  // enforce one coordinate from a mutant vector
-  unsigned int R_internal = cfg->rnd->next_ulong(nfreeparams);
-
   for (unsigned int ivar = 0; ivar < nfreeparams; ivar++)
-    if (cfg->rnd->next(0.0, 1.0) > CR && ivar != R_internal) {
+    if (cfg->rnd->next(0.0, 1.0) > CR) {
       mask[ivar] = 0;
       nmutantcoords--;
     } else
       mask[ivar] = 1;
 
+  // enforce one coordinate from a mutant vector
+  if (nmutantcoords < 1) {
+    mask[cfg->rnd->next_ulong(nfreeparams)] = 1;
+    nmutantcoords = 1;
+  }
+
   return nmutantcoords;
 }
 */
-
 /*
 // accelerated CrossoverMaskUniform (reduced number of next_ulong() calls)
-int asyncde::CDEIterator::CrossoverMaskUniform(double CR,
-                                               std::vector<char> &mask) const {
+int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
+                                               std::vector<char> &mask) {
   if (nfreeparams < 1) {
     std::fill(mask.begin(), mask.end(), -1);
     return -2;
   }
 
-  unsigned int nmutantcoords = cfg->rnd->next_binomialuint(nfreeparams - 1, CR);
-  // enforce one coordinate from a mutant vector
-  if (nmutantcoords < 1)
-    nmutantcoords = 1;
+  unsigned int nmutantcoords = 1 + cfg->rnd->next_binomialuint(nfreeparams - 1, CR);
 
   int value;
   unsigned int nfills;
@@ -965,10 +964,7 @@ int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
     return -2;
   }
 
-  unsigned int nmutantcoords = cfg->rnd->next_binomialuint(nfreeparams - 1, CR);
-  // enforce one coordinate from a mutant vector
-  if (nmutantcoords < 1)
-    nmutantcoords = 1;
+  unsigned int nmutantcoords = 1 + cfg->rnd->next_binomialuint(nfreeparams - 1, CR);
 
   int value;
   unsigned int nfills;
@@ -1176,13 +1172,6 @@ int asyncde::CDEIterator::FillInMutantIntADEPoint(const ADEPoint *target_point,
 #endif // LC_DEBUG
 
   switch (adecfg->Fscaletype) {
-  case ADE_FSCALE_FCauchy:
-    _point.ADEInfoMutable()->F =
-        (adecfg->Fmax > adecfg->Fmin)
-            ? cfg->rnd->randCauchyTruncated(adecfg->Fmu, adecfg->Fsigma,
-                                            adecfg->Fmin, adecfg->Fmax)
-            : adecfg->Fmu;
-    break;
   case ADE_FSCALE_jDE:
     // jDE adaptation
     if (target_point->ADEInfo()->F >= adecfg->Fmin &&
@@ -1196,10 +1185,17 @@ int asyncde::CDEIterator::FillInMutantIntADEPoint(const ADEPoint *target_point,
               : adecfg->Fmin;
     break;
   case ADE_FSCALE_JADE:
-  default:
     _point.ADEInfoMutable()->F =
         (adecfg->Fmax > adecfg->Fmin)
             ? cfg->rnd->randCauchyTruncated(FmuJADE, adecfg->Fsigma,
+                                            adecfg->Fmin, adecfg->Fmax)
+            : adecfg->Fmu;
+    break;
+  case ADE_FSCALE_FCauchy:
+  default:
+    _point.ADEInfoMutable()->F =
+        (adecfg->Fmax > adecfg->Fmin)
+            ? cfg->rnd->randCauchyTruncated(adecfg->Fmu, adecfg->Fsigma,
                                             adecfg->Fmin, adecfg->Fmax)
             : adecfg->Fmu;
     /*
