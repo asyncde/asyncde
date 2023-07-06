@@ -17,7 +17,7 @@ The AsyncDE library also implements classic DE, JADE and jDE algorithms.
 Feel free to contact authors with questions about AsyncDE by e-mail asyncde@gmail.com!
 
 ### Usage
-AsyncDE requires C++11 compatible complier (e.g. gcc or clang with development options) and CMake to compile and run. In addition the library implements optional MPI and OMP variants for parallel calls of an optimized function within Master/Workers scheme.
+AsyncDE requires C++11 compatible compiler (e.g. gcc or clang with development options) and CMake to compile and run. In addition, the library implements optional MPI and OMP variants for parallel calls of an optimized function within Master/Workers scheme.
 
 <!--
 **asyncde/asyncde** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
