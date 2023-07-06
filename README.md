@@ -1,0 +1,26 @@
+### AsyncDE
+
+AsincDE is a high performance C++ implementation of the Asynchronous Differential Evolution algorithm, based on ideas from
+<ul>
+  <li>Zhabitskaya, E., Zhabitsky, M. (2013). Asynchronous Differential Evolution with Restart.</li>
+ In: Dimov, I., Faragó, I., Vulkov, L. (eds) Numerical Analysis and Its Applications. NAA 2012. Lecture Notes in Computer Science, vol 8236. Springer,
+ Berlin, Heidelberg. https://doi.org/10.1007/978-3-642-41515-9_64
+  <li>Zhabitsky, M., Zhabitskaya, E. 2013. Asynchronous differential evolution with adaptive correlation matrix.</li>
+ In Proceedings of the 15th annual conference on Genetic and evolutionary computation (GECCO '13). Association for Computing Machinery, New York, NY, USA, 455–462.
+ https://doi.org/10.1145/2463372.2463428
+</ul>
+
+<!--
+**asyncde/asyncde** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+
+Here are some ideas to get you started:
+
+- 🔭 I’m currently working on ...
+- 🌱 I’m currently learning ...
+- 👯 I’m looking to collaborate on ...
+- 🤔 I’m looking for help with ...
+- 💬 Ask me about ...
+- 📫 How to reach me: ...
+- 😄 Pronouns: ...
+- ⚡ Fun fact: ...
+-->
