@@ -254,7 +254,7 @@ int asyncde::ADEConfig::Print(FILE *stream) const {
              Fmu, Fsigma, Fmin, Fmax, Fc)))
       return retvalue;
     break;
-  case ADE_FSCALE_FCauchy:
+  case ADE_FSCALE_Cauchy:
   default:
     if (0 >
         (retvalue = fprintf(stream, "F=Cauchy(%.5e, %.5e) in [%.5e, %.5e]\n",

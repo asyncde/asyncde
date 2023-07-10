@@ -72,7 +72,7 @@ enum ade_crossover_update_types {
 };
 
 enum ade_fscale_types {
-  ADE_FSCALE_FCauchy = 0,
+  ADE_FSCALE_Cauchy = 0,
   ADE_FSCALE_jDE,
   ADE_FSCALE_JADE,
   ADE_FSCALE_NTYPES
@@ -137,7 +137,7 @@ protected:
     targetvector = ADE_VECTOR_RAND;
     basevector = ADE_VECTOR_RAND;
     ndifferences = 1;
-    Fscaletype = ADE_FSCALE_FCauchy;
+    Fscaletype = ADE_FSCALE_Cauchy;
     Fmin = 0.1;
     Fmax = 0.99;
     tauF = 0.1;
