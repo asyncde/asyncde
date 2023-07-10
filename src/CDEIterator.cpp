@@ -1191,7 +1191,7 @@ int asyncde::CDEIterator::FillInMutantIntADEPoint(const ADEPoint *target_point,
                                             adecfg->Fmin, adecfg->Fmax)
             : adecfg->Fmu;
     break;
-  case ADE_FSCALE_FCauchy:
+  case ADE_FSCALE_Cauchy:
   default:
     _point.ADEInfoMutable()->F =
         (adecfg->Fmax > adecfg->Fmin)
