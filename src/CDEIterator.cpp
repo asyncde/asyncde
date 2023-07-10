@@ -1010,7 +1010,7 @@ int asyncde::CDEIterator::CrossoverMask(const ADEPoint &target_point,
                                         adecfg->CRmax)
                   : adecfg->CRmin;
     break;
-  case ADE_CROSSOVER_UPDATE_CRCauchy:
+  case ADE_CROSSOVER_UPDATE_Cauchy:
   default:
     CRlocal = (adecfg->CRmax > adecfg->CRmin)
                   ? cfg->rnd->randCauchyTruncated(adecfg->CRmu, adecfg->CRsigma,

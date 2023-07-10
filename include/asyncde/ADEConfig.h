@@ -64,7 +64,7 @@ enum ade_crossover_types {
 };
 
 enum ade_crossover_update_types {
-  ADE_CROSSOVER_UPDATE_CRCauchy = 0,
+  ADE_CROSSOVER_UPDATE_Cauchy = 0,
   ADE_CROSSOVER_UPDATE_jDE,
   ADE_CROSSOVER_UPDATE_JADE,
   ADE_CROSSOVER_UPDATE_ACM,
