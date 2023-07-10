@@ -151,7 +151,7 @@ int asyncde::ADEConfig::SetStrategy(const std::string &strategyname) {
       break;
     case ADE_CROSSOVER_BIN:
     default:
-      CRupdatetype = ADE_CROSSOVER_UPDATE_CRCauchy;
+      CRupdatetype = ADE_CROSSOVER_UPDATE_Cauchy;
     }
 
     if (MinPopSize() < MinimalADEPopulationSize())
@@ -279,7 +279,7 @@ int asyncde::ADEConfig::Print(FILE *stream) const {
                                 CRmin, CRmax, tauCR)))
       return retvalue;
     break;
-  case ADE_CROSSOVER_UPDATE_CRCauchy:
+  case ADE_CROSSOVER_UPDATE_Cauchy:
   default:
     if (0 >
         (retvalue = fprintf(stream, "CR=Cauchy(%.5e, %.5e) in [%.5e, %.5e]\n",
