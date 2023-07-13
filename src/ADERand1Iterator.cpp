@@ -316,8 +316,7 @@ int asyncde::ADERand1Iterator::FillInTrialIntADEPoint(Point &_point) {
     for (unsigned int ix = 0; ix < nfreevars; ix++) {
       (*x)[ix] = (*x1)[ix] + F * ((*x2)[ix] - (*x3)[ix]);
       if (similarvar == -1 &&
-          0 == fuzzy_cmp((*x2)[ix], (*x3)[ix],
-                         cfg->criteriarestart.xepsilon))
+          0 == fuzzy_cmp((*x2)[ix], (*x3)[ix], cfg->criteriarestart.xepsilon))
         similarvar = ix;
     }
 
@@ -340,7 +339,7 @@ int asyncde::ADERand1Iterator::FillInTrialIntADEPoint(Point &_point) {
     status->Incr_nProjFeas();
   } while ((tag != PointInfo::NOT_INITIALIZED_POINT) &&
            status->nprojfeas < nmax_attempts);
-  
+
   if (tag == PointInfo::NOT_INITIALIZED_POINT)
     _point.InfoMutable()->SwitchToNewId();
   else

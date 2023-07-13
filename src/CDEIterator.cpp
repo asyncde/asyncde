@@ -925,7 +925,8 @@ int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
     return -2;
   }
 
-  unsigned int nmutantcoords = 1 + cfg->rnd->next_binomialuint(nfreeparams - 1, CR);
+  unsigned int nmutantcoords = 1 + cfg->rnd->next_binomialuint(nfreeparams - 1,
+CR);
 
   int value;
   unsigned int nfills;
@@ -964,7 +965,8 @@ int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
     return -2;
   }
 
-  unsigned int nmutantcoords = 1 + cfg->rnd->next_binomialuint(nfreeparams - 1, CR);
+  unsigned int nmutantcoords =
+      1 + cfg->rnd->next_binomialuint(nfreeparams - 1, CR);
 
   int value;
   unsigned int nfills;
