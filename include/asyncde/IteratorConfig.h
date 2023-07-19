@@ -36,6 +36,8 @@ public:
   StopCriteria criteriastop;
   StopCriteria criteriarestart;
   StopCriteria criteriarecover;
+  double pybest; // leading part of a population, which is taken into account
+                 // for yepsilon and ydelta criteria
   Rnd *rnd;
 
   /// level of verbosity: 0 = quiet, 3 - maximal verbosity
@@ -46,6 +48,7 @@ protected:
     criteriastop.SetDefaultStopCriteria();
     criteriarestart.SetDefaultRestartCriteria();
     criteriarecover.statusbits = 0;
+    pybest = 0.7;
     verbose = 0;
   }
 

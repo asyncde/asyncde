@@ -432,12 +432,18 @@ void asyncde::CDEIterator::UpdatePopulationSpread(const long int iposition) {
     }
 
     // update Y
-    vmin = (*base_population[0]->Data()->Y())[0];
-    vmax = (*base_population[base_population_actual_size - 1]->Data()->Y())[0];
-
-    if (population_complete)
+    if (population_complete) {
+      vmin = (*base_population[pid_index_for_value_key[0]]->Data()->Y())[0];
+      // keep the leading part of the population into account
+      unsigned int vmax_index =
+          int(cfg->pybest * base_population_actual_size - 0.5);
+      if (vmax_index < 1)
+        vmax_index = 1;
+      vmax = (*base_population[pid_index_for_value_key[vmax_index]]
+                   ->Data()
+                   ->Y())[0];
       status->AddMinMaxPair(vmin, vmax, 0);
-    else
+    } else
       status->AddMinMaxPair(-std::numeric_limits<double>::max(),
                             std::numeric_limits<double>::max(), 0);
   }
@@ -651,12 +657,13 @@ int asyncde::CDEIterator::AddIntPoint(Point &_point) {
 
 #ifdef LC_DEBUG
   double ybest = (*base_population[pid_index_for_value_key[0]]->Data()->Y())[0];
-  fprintf(stdout, "%.5e [%.5e]:", ybest, (*BestIntPoint()->Data()->Y())[0]);
+  fprintf(messages_stream, "%.5e [%.5e]:", ybest,
+          (*BestIntPoint()->Data()->Y())[0]);
   for (unsigned int ip = 1; ip < base_population_actual_size; ip++)
-    fprintf(stdout, " %.3e",
+    fprintf(messages_stream, " %.3e",
             (*base_population[pid_index_for_value_key[ip]]->Data()->Y())[0] -
                 ybest);
-  fprintf(stdout, "\n");
+  fprintf(messages_stream, "\n");
 #endif // LC_DEBUG
 
   return selected;
@@ -720,7 +727,7 @@ int asyncde::CDEIterator::FillInTrialIntPoint(Point &_point, int maxnrestarts) {
     if (maxnrestarts > 0) {
       maxnrestarts--;
 
-      fprintf(stderr,
+      fprintf(errors_stream,
               "recursive call of FillInTrialIntPoint(), maxnrestarts=%i\n",
               maxnrestarts);
 
@@ -1201,7 +1208,7 @@ int asyncde::CDEIterator::FillInMutantIntADEPoint(const ADEPoint *target_point,
                                             adecfg->Fmin, adecfg->Fmax)
             : adecfg->Fmu;
     /*
-    fprintf(stderr, "%.3e = Cauchy(%.3e, %.3e) in [%.3e, %.3e]\n",
+    fprintf(errors_stream, "%.3e = Cauchy(%.3e, %.3e) in [%.3e, %.3e]\n",
             _point.ADEInfo()->F, FmuJADE, adecfg->Fsigma, adecfg->Fmin,
             adecfg->Fmax);
     */
