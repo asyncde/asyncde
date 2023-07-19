@@ -37,5 +37,12 @@ int asyncde::IteratorConfig::Print(FILE *stream) const {
     criteriarecover.Print(stream);
   }
 
+  if (criteriastop.statusbits || criteriarestart.statusbits ||
+      criteriarecover.statusbits)
+    fprintf(stream,
+            "The leading %.2e part of the population is taken into account for "
+            "CRITERION_yepsilon and CRITERION_ydelta\n",
+            pybest);
+
   return 0;
 }
