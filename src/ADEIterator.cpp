@@ -109,7 +109,7 @@ int asyncde::ADEIterator::CrossoverMaskCorrMatrix(
 int asyncde::ADEIterator::CrossoverMask(const ADEPoint &target_point,
                                         ADEPoint &_point) {
   if (!corr_reliable)
-    corr_reliable = TestCorrReliable();
+    corr_reliable = TestCorrReliable() > 0;
 
   if (adecfg->CRupdatetype != ADE_CROSSOVER_UPDATE_ACM || !corr_reliable)
     return CDEIterator::CrossoverMask(target_point, _point);
@@ -189,7 +189,7 @@ int asyncde::ADEIterator::UpdateSampleCorrMatrixSums(
     corr_xi[i] += vw;
     corr_xi2[i] += v * vw;
 
-    int index = CorrXijIndex(i, i + 1);
+    unsigned int index = CorrXijIndex(i, i + 1);
     for (unsigned int j = i + 1; j < nfreeparams; j++) {
       corr_xij[index] += x[j] * vw;
       index++;
@@ -215,7 +215,7 @@ int asyncde::ADEIterator::UpdateSampleCorrMatrixSumsByDiff(
     corr_xi[i] += d;
     corr_xi2[i] += d * (vnew + vold);
 
-    int index = CorrXijIndex(i, i + 1);
+    unsigned int index = CorrXijIndex(i, i + 1);
     for (unsigned int j = i + 1; j < nfreeparams; j++) {
       corr_xij[index] += xnew[j] * vnew - xold[j] * vold;
       index++;
@@ -228,13 +228,10 @@ int asyncde::ADEIterator::UpdateSampleCorrMatrixSumsByDiff(
 }
 
 int asyncde::ADEIterator::CalcSampleCorrMatrixFromSums() {
-  int index;
-  double v;
-
   if (corr_n < 2) {
     for (unsigned int i = 0; i < nfreeparams; i++) {
       scm_xii[i] = 0.0;
-      index = CorrXijIndex(i, i + 1);
+      unsigned int index = CorrXijIndex(i, i + 1);
       for (unsigned j = i + 1; j < nfreeparams; j++) {
         scm_xij[index] = 0.0;
         index++;
@@ -245,14 +242,14 @@ int asyncde::ADEIterator::CalcSampleCorrMatrixFromSums() {
 
   double denom = 1.0 / sqrt(corr_n * (corr_n - 1));
   for (unsigned int i = 0; i < nfreeparams; i++) {
-    v = corr_n * corr_xi2[i] - corr_xi[i] * corr_xi[i];
+    const double v = corr_n * corr_xi2[i] - corr_xi[i] * corr_xi[i];
     scm_xii[i] = (v > 0.0) ? denom * sqrt(v) : 0.0;
   }
 
   for (unsigned int i = 0; i < nfreeparams; i++) {
-    index = CorrXijIndex(i, i + 1);
+    unsigned int index = CorrXijIndex(i, i + 1);
     for (unsigned int j = i + 1; j < nfreeparams; j++) {
-      v = (corr_n - 1.0) * scm_xii[i] * scm_xii[j];
+      double v = (corr_n - 1.0) * scm_xii[i] * scm_xii[j];
       if (v > 0.0) {
         v = (corr_xij[index] - corr_xi[i] * corr_xi[j] / corr_n) / v;
         if (v > 1.0)
@@ -279,8 +276,6 @@ int asyncde::ADEIterator::CalculateSampleCorrMatrix() {
 }
 
 int asyncde::ADEIterator::PrintCorrMatrix() const {
-  int index;
-
   printf("SCM:\n");
   for (unsigned int i = 0; i < nfreeparams; i++) {
     for (unsigned int j = 0; j < i; j++)
@@ -288,7 +283,7 @@ int asyncde::ADEIterator::PrintCorrMatrix() const {
 
     printf("%12.5e ", scm_xii[i]);
 
-    index = CorrXijIndex(i, i + 1);
+    unsigned int index = CorrXijIndex(i, i + 1);
     for (unsigned int j = i + 1; j < nfreeparams; j++) {
       printf("%12.5e ", scm_xij[index]);
       index++;
@@ -303,7 +298,7 @@ int asyncde::ADEIterator::PrintCorrMatrix() const {
 
     printf("%12.5e ", acm_xii[i]);
 
-    index = CorrXijIndex(i, i + 1);
+    unsigned int index = CorrXijIndex(i, i + 1);
     for (unsigned int j = i + 1; j < nfreeparams; j++) {
       printf("%12.5e ", acm_xij[index]);
       index++;
@@ -329,12 +324,11 @@ int asyncde::ADEIterator::CalculateAdaptiveCorrMatrix() {
   int retvalue = 0;
 
   const double wCR = (acm_first) ? 1.0 : adecfg->wCR;
-  int index;
 
   for (unsigned int i = 0; i < nfreeparams; i++) {
     acm_xii[i] += wCR * (scm_xii[i] - acm_xii[i]);
 
-    index = CorrXijIndex(i, i + 1);
+    unsigned int index = CorrXijIndex(i, i + 1);
     for (unsigned int j = i + 1; j < nfreeparams; j++) {
       acm_xij[index] += wCR * (scm_xij[index] - acm_xij[index]);
       index++;
