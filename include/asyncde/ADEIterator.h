@@ -78,7 +78,7 @@ protected:
   virtual int FCrDefaultSettings() override;
 
 public:
-  int CorrXijIndex(int i, int j) const {
+  unsigned int CorrXijIndex(unsigned int i, unsigned int j) const {
     return (i < j) ? nfreeparams * i + j - ((i + 1) * (i + 2)) / 2
                    : nfreeparams * j + i - ((j + 1) * (j + 2)) / 2;
   }
