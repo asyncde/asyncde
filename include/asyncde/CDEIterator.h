@@ -108,13 +108,13 @@ public:
 protected:
   /// a temporary vector to keep used indices (value_key), sorted; used within
   /// generate_ade_trial_point()
-  std::vector<int> vetovector;
+  std::vector<unsigned int> vetovector;
 
   /// temporary vector
   std::vector<double> xexttmpvector; // [nparams]
 
   /// temporary vector. Used by CrossoverMaskUniform
-  std::vector<int> tmpindices; // [nfreeparams]
+  std::vector<unsigned int> tmpindices; // [nfreeparams]
 
 public:
   CDEIterator(const Problem &_problem, const IteratorConfig *_cfg);
@@ -207,7 +207,7 @@ protected:
 
   int InitVetoVector();
 
-  int InsertIntoVetoVector(int valueindex);
+  int InsertIntoVetoVector(unsigned int valueindex);
 
   /// fills in the _point by the mutant vector
   virtual int FillInMutantIntADEPoint(const ADEPoint *target_point,

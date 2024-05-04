@@ -457,7 +457,7 @@ int asyncde::CDEIterator::Selection(ADEPoint &_adepoint, int &ipidpos2replace) {
 
   switch (_adepoint.ADEInfo()->selectiontype) {
   case ADE_SELECTION_RANDOM:
-    ipidpos2replace = cfg->rnd->next_ulong(base_population_actual_size);
+    ipidpos2replace = cfg->rnd->next_uniuint(base_population_actual_size);
     _adepoint.ADEInfoMutable()->SetParentId(pid_key[ipidpos2replace]);
     break;
   case ADE_SELECTION_WORST:
@@ -813,11 +813,11 @@ int asyncde::CDEIterator::GenerateUniformRandomPoint(ADEPoint &_point) {
 int asyncde::CDEIterator::AssignVector(const int vector_type,
                                        const std::vector<double> *&vector,
                                        const ADEPoint **_point) {
-  int index = -1;
+  unsigned int index;
   vector = 0;
   const ADEPoint *newpoint = 0;
-  int poolsize = adecfg->MinPopSize() - vetovector.size();
-  int maxsize;
+  unsigned int poolsize = adecfg->MinPopSize() - vetovector.size();
+  unsigned int maxsize;
 
   switch (vector_type) {
   case ADE_VECTOR_BEST:
@@ -840,26 +840,26 @@ int asyncde::CDEIterator::AssignVector(const int vector_type,
       index = poolsize - 1;
     break;
   case ADE_VECTOR_PWORST:
-    maxsize = int(adecfg->pworst * adecfg->MinPopSize() + 0.5);
+    maxsize = (unsigned int)(adecfg->pworst * adecfg->MinPopSize() + 0.5);
     if (maxsize < 2)
       index = poolsize - 1;
     else
       index = (maxsize < poolsize)
-                  ? poolsize - 1 - cfg->rnd->next_ulong(maxsize)
-                  : cfg->rnd->next_ulong(poolsize);
+                  ? poolsize - 1 - cfg->rnd->next_uniuint(maxsize)
+                  : cfg->rnd->next_uniuint(poolsize);
     break;
   case ADE_VECTOR_CURRENTTOPBEST:
   case ADE_VECTOR_TARGETTOPBEST:
-    maxsize = int(adecfg->pbest * adecfg->MinPopSize() + 0.5);
+    maxsize = (unsigned int)(adecfg->pbest * adecfg->MinPopSize() + 0.5);
     if (maxsize < 2)
       index = 0;
     else
-      index = (maxsize < poolsize) ? cfg->rnd->next_ulong(maxsize)
-                                   : cfg->rnd->next_ulong(poolsize);
+      index = (maxsize < poolsize) ? cfg->rnd->next_uniuint(maxsize)
+                                   : cfg->rnd->next_uniuint(poolsize);
     break;
   case ADE_VECTOR_ARAND:
     if (archive) {
-      index = cfg->rnd->next_ulong(poolsize + archive->Size());
+      index = cfg->rnd->next_uniuint(poolsize + archive->Size());
       if (index >= poolsize)
         newpoint = (const ADEPoint *)archive->GetPoint(index - poolsize);
       break;
@@ -872,16 +872,16 @@ int asyncde::CDEIterator::AssignVector(const int vector_type,
   case ADE_VECTOR_CURRENTTOBEST:
   case ADE_VECTOR_TARGETTOBEST:
   default:
-    index = cfg->rnd->next_ulong(poolsize);
+    index = cfg->rnd->next_uniuint(poolsize);
   }
 
   if (!newpoint) {
     // refine index value
-    for (int ind : vetovector)
+    for (unsigned int ind : vetovector)
       if (index >= ind)
         index++;
 
-    if (index >= (int)adecfg->MinPopSize())
+    if (index >= adecfg->MinPopSize())
       fprintf(errors_stream, "Error in asyncde::CDEIterator::AssignVector()\n");
 
     newpoint = base_population[pid_index_for_value_key[index]];
@@ -916,7 +916,7 @@ int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
 
   // enforce one coordinate from a mutant vector
   if (nmutantcoords < 1) {
-    mask[cfg->rnd->next_ulong(nfreeparams)] = 1;
+    mask[cfg->rnd->next_uniuint(nfreeparams)] = 1;
     nmutantcoords = 1;
   }
 
@@ -924,7 +924,7 @@ int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
 }
 */
 /*
-// accelerated CrossoverMaskUniform (reduced number of next_ulong() calls)
+// accelerated CrossoverMaskUniform (reduced number of next_uniuint() calls)
 int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
                                                std::vector<char> &mask) {
   if (nfreeparams < 1) {
@@ -948,7 +948,7 @@ CR);
   }
 
   for (unsigned int irand = 0; irand < nfills; irand++) {
-    unsigned int urand = cfg->rnd->next_ulong(nfreeparams - irand);
+    unsigned int urand = cfg->rnd->next_uniuint(nfreeparams - irand);
     unsigned int counter = 0;
     for (unsigned int j = 0; j < nfreeparams; j++)
       if (mask[j] != value) {
@@ -964,7 +964,7 @@ CR);
 }
 */
 
-// accelerated CrossoverMaskUniform (requires std::vector<int> tmpindices)
+// accelerated CrossoverMaskUniform (requires std::vector<unsigned int> tmpindices)
 int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
                                                std::vector<char> &mask) {
   if (nfreeparams < 1) {
@@ -988,10 +988,10 @@ int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
   }
 
   tmpindices.resize(nfreeparams);
-  std::iota(tmpindices.begin(), tmpindices.end(), 0);
+  std::iota(tmpindices.begin(), tmpindices.end(), (unsigned int)0);
 
   for (unsigned int irand = 0; irand < nfills; irand++) {
-    unsigned int urand = cfg->rnd->next_ulong(nfreeparams - irand);
+    unsigned int urand = cfg->rnd->next_uniuint(nfreeparams - irand);
     mask[tmpindices[urand]] = value;
     tmpindices[urand] = tmpindices[nfreeparams - irand - 1];
   }
@@ -1123,18 +1123,17 @@ int asyncde::CDEIterator::InitVetoVector() {
   return adecfg->MinPopSize() - vetovector.size();
 }
 
-int asyncde::CDEIterator::InsertIntoVetoVector(int valueindex) {
-  int ipos = 0;
-  int vetovectorsize = vetovector.size();
+int asyncde::CDEIterator::InsertIntoVetoVector(unsigned int valueindex) {
+  unsigned int vetovectorsize = vetovector.size();
 
-  for (ipos = 0; ipos < vetovectorsize; ipos++)
+  for (unsigned int ipos = 0; ipos < vetovectorsize; ipos++)
     if (valueindex <= vetovector[ipos]) {
       if (valueindex == vetovector[ipos])
         return 0;
 
       vetovector.push_back(valueindex);
-      if (ipos < (int)vetovector.size() + 1) {
-        for (int ind = vetovector.size() - 1; ind > ipos; ind--)
+      if (ipos < vetovector.size() + 1) {
+        for (unsigned int ind = vetovector.size() - 1; ind > ipos; ind--)
           vetovector[ind] = vetovector[ind - 1];
         vetovector[ipos] = valueindex;
       }

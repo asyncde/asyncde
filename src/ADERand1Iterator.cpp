@@ -471,7 +471,7 @@ int asyncde::ADERand1Iterator::AddIntPoint(Point &_point) {
   }
 
   int selected = 0;
-  int ipos = -1;
+  unsigned int ipos;
   if (base_population_actual_size < aderand1cfg->MinPopSize()) {
     selected = 1;
     ipos = base_population_actual_size;
@@ -479,7 +479,7 @@ int asyncde::ADERand1Iterator::AddIntPoint(Point &_point) {
     base_population_actual_size++;
   } else {
     // compare to a random population member
-    ipos = cfg->rnd->next_ulong(base_population_actual_size);
+    ipos = cfg->rnd->next_uniuint(base_population_actual_size);
     if ((*_point.Data()->Y())[0] < (*base_population[ipos]->Data()->Y())[0]) {
       selected = 1;
       base_population[ipos]->Set(_point);

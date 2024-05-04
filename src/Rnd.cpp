@@ -29,8 +29,8 @@ double asyncde::Rnd::BoxMuller(double mu, double sigma, double xmin,
   double u1, u2;
 
   do {
-    u1 = unirand(engine);
-    u2 = unirand(engine);
+    u1 = unidouble(engine);
+    u2 = unidouble(engine);
     normal_rnd = sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2) * sigma + mu;
   } while (normal_rnd < xmin || normal_rnd > xmax);
 
@@ -40,7 +40,7 @@ double asyncde::Rnd::BoxMuller(double mu, double sigma, double xmin,
 double asyncde::Rnd::randCauchy(const double sigma) {
   double urand;
   do
-    urand = unirand(engine);
+    urand = unidouble(engine);
   while (urand < std::numeric_limits<double>::epsilon() ||
          urand > 1.0 - std::numeric_limits<double>::epsilon());
 
@@ -51,7 +51,7 @@ double asyncde::Rnd::randCauchyTruncated(double mu, double sigma, double xmin,
                                          double xmax) {
   double umin = atan((xmin - mu) / sigma) / M_PI + 0.5;
   double umax = atan((xmax - mu) / sigma) / M_PI + 0.5;
-  double urand = umin + unirand(engine) * (umax - umin);
+  double urand = umin + unidouble(engine) * (umax - umin);
 
   return mu + sigma * tan(M_PI * (urand - 0.5));
 }
@@ -64,9 +64,8 @@ int asyncde::Rnd::randdistinct(unsigned int ngen, unsigned int nmax,
 
   nrand.resize(ngen);
   nrand_sorted.resize(ngen);
-  unsigned long int urand;
   for (unsigned int irand = 0; irand < ngen; irand++) {
-    urand = unilong(engine) % (nmax - irand);
+    unsigned int urand = uniuint(engine) % (nmax - irand);
     unsigned int j = 0;
     for (; j < irand; j++)
       if (urand >= nrand_sorted[j])
