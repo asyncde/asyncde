@@ -899,8 +899,8 @@ int asyncde::CDEIterator::AssignVector(const int vector_type,
 /*
 // classical crossover O(nfreeparams)
 int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
-                                               std::vector<unsigned char> &mask) {
-  int nmutantcoords = nfreeparams;
+                                               std::vector<unsigned char> &mask)
+{ int nmutantcoords = nfreeparams;
 
   if (nfreeparams < 1) {
     std::fill(mask.begin(), mask.end(), (unsigned char)0);
@@ -926,9 +926,8 @@ int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
 /*
 // accelerated CrossoverMaskUniform (reduced number of next_uniuint() calls)
 int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
-                                               std::vector<unsigned char> &mask) {
-  if (nfreeparams < 1) {
-    std::fill(mask.begin(), mask.end(), (unsigned char)0);
+                                               std::vector<unsigned char> &mask)
+{ if (nfreeparams < 1) { std::fill(mask.begin(), mask.end(), (unsigned char)0);
     return -2;
   }
 
@@ -964,9 +963,10 @@ CR);
 }
 */
 
-// accelerated CrossoverMaskUniform (requires std::vector<unsigned int> tmpindices)
-int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
-                                               std::vector<unsigned char> &mask) {
+// accelerated CrossoverMaskUniform (requires std::vector<unsigned int>
+// tmpindices)
+int asyncde::CDEIterator::CrossoverMaskUniform(
+    const double CR, std::vector<unsigned char> &mask) {
   if (nfreeparams < 1) {
     std::fill(mask.begin(), mask.end(), (unsigned char)0);
     return -2;
