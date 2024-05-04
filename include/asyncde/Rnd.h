@@ -30,24 +30,24 @@ class Rnd {
   //  protected:
 public:
   std::mt19937 engine;
-  std::uniform_real_distribution<double> unirand;
-  std::uniform_int_distribution<unsigned long> unilong;
+  std::uniform_real_distribution<double> unidouble;
+  std::uniform_int_distribution<unsigned int> uniuint;
   std::binomial_distribution<unsigned int> binomialuint;
 
 public:
   Rnd(unsigned long int seed) {
     engine.seed(seed);
-    unirand = std::uniform_real_distribution<double>{0.0, 1.0};
-    unilong = std::uniform_int_distribution<unsigned long>{0, ULONG_MAX};
+    unidouble = std::uniform_real_distribution<double>{0.0, 1.0};
+    uniuint = std::uniform_int_distribution<unsigned int>{0, UINT_MAX};
   }
 
   double next(double xmin = 0.0, double xmax = 1.0) {
-    return xmin + unirand(engine) * (xmax - xmin);
+    return xmin + unidouble(engine) * (xmax - xmin);
   }
 
   // returns random long int in [0; umax - 1]
-  unsigned long int next_ulong(unsigned long int umax) {
-    return unilong(engine) % umax;
+  unsigned int next_uniuint(unsigned int umax) {
+    return uniuint(engine) % umax;
   }
 
   // returns random int in [0; upbound]

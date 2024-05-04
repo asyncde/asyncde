@@ -109,7 +109,7 @@ protected:
   /// crossover based on correlation matrix, returns number of free coordinates
   /// selected from the mutant vector
   int CrossoverMaskCorrMatrix(double corr_thr, unsigned int corr_index,
-                              std::vector<char> &mask) const;
+                              std::vector<unsigned char> &mask) const;
 
   /// set crossover mask for _point, returns number of coordinates
   /// selected from the mutant vector

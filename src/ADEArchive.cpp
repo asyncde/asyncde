@@ -60,7 +60,7 @@ int asyncde::ADEArchive::AddPoint(const asyncde::Point &_point) {
   Point *tmp_point_ptr;
   if (actualsize == population.size()) {
     // remove random point
-    unsigned int irndpos = cfg->rnd->next_ulong(actualsize);
+    unsigned int irndpos = cfg->rnd->next_uniuint(actualsize);
     if (irndpos < actualsize - 1) {
       tmp_point_ptr = population[irndpos];
       std::move(population.begin() + irndpos + 1,

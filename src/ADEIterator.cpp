@@ -81,7 +81,8 @@ int asyncde::ADEIterator::FCrDefaultSettings() {
 }
 
 int asyncde::ADEIterator::CrossoverMaskCorrMatrix(
-    double corr_thr, unsigned int corr_index, std::vector<char> &mask) const {
+    double corr_thr, unsigned int corr_index,
+    std::vector<unsigned char> &mask) const {
   if (nfreeparams < 1)
     return -1;
 
@@ -121,7 +122,7 @@ int asyncde::ADEIterator::CrossoverMask(const ADEPoint &target_point,
           ? target_point.ADEInfo()->corr_thr
           : cfg->rnd->next(0.0, 1.0);
 
-  int corr_indexlocal = cfg->rnd->next_ulong(nfreeparams);
+  unsigned int corr_indexlocal = cfg->rnd->next_uniuint(nfreeparams);
 
   int nmutantcoords =
       CrossoverMaskCorrMatrix(_point.ADEInfoMutable()->corr_thr,

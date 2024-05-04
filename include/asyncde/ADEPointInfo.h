@@ -44,7 +44,7 @@ public:
 
   /// mask (blocks of coordinates inherited from a mutant vector). Used by
   /// ACM/Sum2
-  std::vector<char> mask;
+  std::vector<unsigned char> mask;
 
   /// choice of a competitor for the Darwinian selection
   ade_selection_types selectiontype;
@@ -74,7 +74,7 @@ public:
       F = adepointinfo->F;
       CR = adepointinfo->CR;
       corr_thr = adepointinfo->corr_thr;
-      const std::vector<char> *_mask = adepointinfo->Mask();
+      const std::vector<unsigned char> *_mask = adepointinfo->Mask();
       std::copy(_mask->begin(), _mask->end(), mask.begin());
       selectiontype = adepointinfo->selectiontype;
     } else
@@ -124,14 +124,14 @@ public:
     parent_id = (new_parent_id > -1) ? new_parent_id : id;
   }
 
-  const std::vector<char> *Mask() const { return &mask; }
+  const std::vector<unsigned char> *Mask() const { return &mask; }
 
-  std::vector<char> *MaskMutable() { return &mask; }
+  std::vector<unsigned char> *MaskMutable() { return &mask; }
 
   /// reset masks to zeros
-  void ResetMasks() { std::fill(mask.begin(), mask.end(), (char)0); }
+  void ResetMasks() { std::fill(mask.begin(), mask.end(), (unsigned char)0); }
 
-  double CRfromMask(const std::vector<char> &corr_mask) const {
+  double CRfromMask(const std::vector<unsigned char> &corr_mask) const {
     size_t mutated = 0;
     size_t size = corr_mask.size();
     for (auto imask : corr_mask)
