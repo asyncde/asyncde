@@ -899,11 +899,11 @@ int asyncde::CDEIterator::AssignVector(const int vector_type,
 /*
 // classical crossover O(nfreeparams)
 int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
-                                               std::vector<char> &mask) {
+                                               std::vector<unsigned char> &mask) {
   int nmutantcoords = nfreeparams;
 
   if (nfreeparams < 1) {
-    std::fill(mask.begin(), mask.end(), -1);
+    std::fill(mask.begin(), mask.end(), (unsigned char)0);
     return -2;
   }
 
@@ -926,9 +926,9 @@ int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
 /*
 // accelerated CrossoverMaskUniform (reduced number of next_uniuint() calls)
 int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
-                                               std::vector<char> &mask) {
+                                               std::vector<unsigned char> &mask) {
   if (nfreeparams < 1) {
-    std::fill(mask.begin(), mask.end(), -1);
+    std::fill(mask.begin(), mask.end(), (unsigned char)0);
     return -2;
   }
 
@@ -940,11 +940,11 @@ CR);
   if (nmutantcoords < nfreeparams / 2) {
     value = 1;
     nfills = nmutantcoords;
-    std::fill(mask.begin(), mask.end(), 0);
+    std::fill(mask.begin(), mask.end(), (unsigned char)0);
   } else {
     value = 0;
     nfills = nfreeparams - nmutantcoords;
-    std::fill(mask.begin(), mask.end(), 1);
+    std::fill(mask.begin(), mask.end(), (unsigned char)1);
   }
 
   for (unsigned int irand = 0; irand < nfills; irand++) {
@@ -966,25 +966,25 @@ CR);
 
 // accelerated CrossoverMaskUniform (requires std::vector<unsigned int> tmpindices)
 int asyncde::CDEIterator::CrossoverMaskUniform(const double CR,
-                                               std::vector<char> &mask) {
+                                               std::vector<unsigned char> &mask) {
   if (nfreeparams < 1) {
-    std::fill(mask.begin(), mask.end(), -1);
+    std::fill(mask.begin(), mask.end(), (unsigned char)0);
     return -2;
   }
 
   unsigned int nmutantcoords =
       1 + cfg->rnd->next_binomialuint(nfreeparams - 1, CR);
 
-  int value;
+  unsigned char value;
   unsigned int nfills;
   if (nmutantcoords < nfreeparams / 2) {
     value = 1;
     nfills = nmutantcoords;
-    std::fill(mask.begin(), mask.end(), 0);
+    std::fill(mask.begin(), mask.end(), (unsigned char)0);
   } else {
     value = 0;
     nfills = nfreeparams - nmutantcoords;
-    std::fill(mask.begin(), mask.end(), 1);
+    std::fill(mask.begin(), mask.end(), (unsigned char)1);
   }
 
   tmpindices.resize(nfreeparams);
@@ -1052,7 +1052,7 @@ int asyncde::CDEIterator::CrossoverMask(const ADEPoint &target_point,
 
 int asyncde::CDEIterator::CrossoverApplyMask(
     const std::vector<double> &target_vector,
-    std::vector<double> &mutant_vector, const std::vector<char> &mask,
+    std::vector<double> &mutant_vector, const std::vector<unsigned char> &mask,
     int &different) const {
   int nmutantcoords = nfreeparams;
 

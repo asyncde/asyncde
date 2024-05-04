@@ -185,7 +185,7 @@ protected:
 
   /// uniform (binomial) crossover, returns number of free coordinates selected
   /// from the mutant vector
-  int CrossoverMaskUniform(const double CR, std::vector<char> &mask);
+  int CrossoverMaskUniform(const double CR, std::vector<unsigned char> &mask);
 
   /// set crossover mask for _point
   virtual int CrossoverMask(const ADEPoint &target_point, ADEPoint &_point);
@@ -195,7 +195,7 @@ protected:
   /// different == 1 if mutant vector is different from the target vector
   int CrossoverApplyMask(const std::vector<double> &target_vector,
                          std::vector<double> &mutant_vector,
-                         const std::vector<char> &mask, int &different) const;
+                         const std::vector<unsigned char> &mask, int &different) const;
 
   /// Fills in the _point by the trial vector
   virtual int CrossoverIntADEPoint(const ADEPoint *target_point,

@@ -81,7 +81,7 @@ int asyncde::ADEIterator::FCrDefaultSettings() {
 }
 
 int asyncde::ADEIterator::CrossoverMaskCorrMatrix(
-    double corr_thr, unsigned int corr_index, std::vector<char> &mask) const {
+    double corr_thr, unsigned int corr_index, std::vector<unsigned char> &mask) const {
   if (nfreeparams < 1)
     return -1;
 
