@@ -41,6 +41,7 @@ protected:
   void Init() {
     vtr = std::numeric_limits<double>::max();
     nFE = 0;
+    naccepted = 0;
 
     ResetAfterRestart();
   }
@@ -76,7 +77,7 @@ public:
   }
 
   /// change status if population has been improved
-  void ProgressFound(int /* population_complete */) {}
+  void ProgressFound(int /* population_complete */) { naccepted++; }
 
   void Reset_nxdiff() { nxdiff = 0; }
 
