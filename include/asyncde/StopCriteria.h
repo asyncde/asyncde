@@ -59,6 +59,8 @@ public:
 
   long unsigned int nFE;
 
+  long unsigned int naccepted; // number of accepted points
+
   double xepsilon;
   double yepsilon;
   double ydelta;
