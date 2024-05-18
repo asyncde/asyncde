@@ -26,12 +26,12 @@ namespace asyncde {
 
 // forward declarations:
 class ADEConfig;
-class Point;
+class ADEPoint;
 
 class ADEArchive {
 protected:
   /// population sorted by id (descending order)
-  std::vector<Point *> population;
+  std::vector<ADEPoint *> population;
 
   /// actual size of the archive population (number of activated points)
   unsigned int actualsize;
@@ -50,10 +50,11 @@ public:
   int Resize(unsigned int _basepopsize);
 
   // insert a point into the archive
-  int AddPoint(const Point &_point);
+  int AddPoint(const ADEPoint &_point);
 
   // position = [0, ..., actualsize - 1]
-  const Point *GetPoint(unsigned int position) const;
+  const ADEPoint *GetPoint(unsigned int position,
+                           const std::vector<long int> &vetopidsorted) const;
 };
 
 } // namespace asyncde

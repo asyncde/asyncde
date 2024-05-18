@@ -72,6 +72,10 @@ protected:
 
   ADEArchive *archive;
 
+  /// a temporary vector to keep used parent_indices, sorted; used within
+  /// archive->GetPoint()
+  std::vector<long int> vetopidsorted;
+
 public:
   /// array [nfreeparams] which contains minimal coordinates in population
   std::vector<double> parlow;

@@ -46,6 +46,12 @@ public:
 
   ADEPointInfo *ADEInfoMutable() { return ADEinfo; }
 
+  /// Allocate a copy of this
+  virtual Point *Clone() const override {
+    return new ADEPoint(*this->data->Clone(),
+                        (ADEPointInfo *)this->ADEinfo->Clone());
+  }
+
   virtual int Print(FILE *stream = stdout) const override;
 };
 
