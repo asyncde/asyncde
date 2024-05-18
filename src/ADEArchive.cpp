@@ -23,41 +23,40 @@
 #include <stdlib.h>
 
 #include "asyncde/ADEConfig.h"
-#include "asyncde/Point.h"
+#include "asyncde/ADEPoint.h"
+#include "asyncde/ADEPointInfo.h"
 #include "asyncde/PointData.h"
-#include "asyncde/PointInfo.h"
 #include "asyncde/Rnd.h"
 
 asyncde::ADEArchive::ADEArchive(unsigned int _basepopsize, ADEConfig &_cfg)
     : actualsize(0), cfg(&_cfg) {
-  population.resize(_basepopsize * cfg->archivesizefactor, 0);
+  population.resize(_basepopsize * cfg->archivesizefactor, nullptr);
 }
 
 asyncde::ADEArchive::~ADEArchive() {
-  for (std::vector<Point *>::iterator it = population.begin();
-       it != population.end(); it++)
-    delete *it;
+  for (ADEPoint *pointptr : population)
+    delete pointptr;
 }
 
 int asyncde::ADEArchive::Resize(unsigned int _basepopsize) {
   unsigned int newsize = _basepopsize * cfg->archivesizefactor;
 
   if (newsize < population.size()) {
-    for (std::vector<Point *>::iterator it = population.begin() + newsize;
+    for (std::vector<ADEPoint *>::iterator it = population.begin() + newsize;
          it != population.end(); it++)
       delete *it;
     if (actualsize > newsize)
       actualsize = newsize;
   }
 
-  population.resize(newsize, 0);
+  population.resize(newsize, nullptr);
 
   return 0;
 }
 
 // insert a point into the archive
-int asyncde::ADEArchive::AddPoint(const asyncde::Point &_point) {
-  Point *tmp_point_ptr;
+int asyncde::ADEArchive::AddPoint(const asyncde::ADEPoint &_point) {
+  ADEPoint *tmp_point_ptr;
   if (actualsize == population.size()) {
     // remove random point
     unsigned int irndpos = cfg->rnd->next_uniuint(actualsize);
@@ -87,7 +86,7 @@ int asyncde::ADEArchive::AddPoint(const asyncde::Point &_point) {
   if (0 != population[inewpointpos])
     population[inewpointpos]->Set(_point);
   else
-    population[inewpointpos] = _point.Clone();
+    population[inewpointpos] = (ADEPoint *)_point.Clone();
 
   actualsize++;
 
@@ -95,7 +94,28 @@ int asyncde::ADEArchive::AddPoint(const asyncde::Point &_point) {
 }
 
 // position = [0, ..., actualsize - 1]
-const asyncde::Point *
-asyncde::ADEArchive::GetPoint(unsigned int position) const {
-  return population[std::min(position, actualsize)];
+const asyncde::ADEPoint *asyncde::ADEArchive::GetPoint(
+    unsigned int position, const std::vector<long int> &vetopidsorted) const {
+  if (actualsize < 1)
+    return nullptr;
+
+  const unsigned int ipos0 = std::min(position, actualsize - 1);
+  unsigned int ipos = ipos0;
+  ADEPoint *pointptr = nullptr;
+
+  for (;;) {
+    long int parentid = population[ipos]->ADEInfo()->ParentId();
+    std::vector<long int>::const_iterator pidpos = std::lower_bound(
+        vetopidsorted.cbegin(), vetopidsorted.cend(), parentid);
+    if (pidpos == vetopidsorted.end() || *pidpos != parentid) {
+      pointptr = population[ipos];
+      break;
+    }
+
+    ipos = (ipos + 1) % actualsize;
+    if (ipos0 == ipos)
+      break;
+  }
+
+  return pointptr;
 }

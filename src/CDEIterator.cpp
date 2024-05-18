@@ -92,9 +92,8 @@ asyncde::CDEIterator::CDEIterator(const Problem &_problem,
     const long int piddefault = PointInfo::NOT_INITIALIZED_POINT;
     parlowpid.resize(nfreeparams, piddefault);
     paruppid.resize(nfreeparams, piddefault);
-
-    CDEIterator::FCrDefaultSettings();
   }
+  CDEIterator::FCrDefaultSettings();
 
   xexttmpvector.resize(problem->NVariables());
 
@@ -161,6 +160,7 @@ int asyncde::CDEIterator::lcResize(unsigned int _nparents) {
     return -2;
 
   vetovector.reserve(_nparents);
+  vetopidsorted.reserve(_nparents);
 
   unsigned int oldsize = base_population.size();
   base_population.resize(_nparents, 0);
@@ -505,11 +505,11 @@ int asyncde::CDEIterator::AddIntPoint(Point &_point) {
     return 0;
   }
 
-  int selected = 0;
   ADEPoint *_adepoint = dynamic_cast<ADEPoint *>(&_point);
   if (!_adepoint)
     return -4;
 
+  int selected = 0;
   int iposition = -1;
   int ipos2replace = -1;
   double newY = (*_point.Data()->Y())[0];
@@ -539,6 +539,8 @@ int asyncde::CDEIterator::AddIntPoint(Point &_point) {
         iposition = newpidpos - pid_key.begin();
       } else {
         iposition = ipos2replace;
+        if (archive)
+          archive->AddPoint(*base_population[ipos2replace]);
       }
 
       int ioldvaluepos =
@@ -860,9 +862,21 @@ int asyncde::CDEIterator::AssignVector(const int vector_type,
   case ADE_VECTOR_ARAND:
     if (archive) {
       index = cfg->rnd->next_uniuint(poolsize + archive->Size());
-      if (index >= poolsize)
-        newpoint = (const ADEPoint *)archive->GetPoint(index - poolsize);
-      break;
+      if (index >= poolsize) {
+        // fill in veto parent ids
+        vetopidsorted.clear();
+        for (unsigned int vkey : vetovector)
+          vetopidsorted.push_back(base_population[pid_index_for_value_key[vkey]]
+                                      ->ADEInfo()
+                                      ->ParentId());
+        std::sort(vetopidsorted.begin(), vetopidsorted.end());
+
+        newpoint = (const ADEPoint *)archive->GetPoint(index - poolsize,
+                                                       vetopidsorted);
+      }
+
+      if (newpoint)
+        break;
     }
     /* FALLTHRU */
   case ADE_VECTOR_RAND:
