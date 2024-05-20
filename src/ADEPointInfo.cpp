@@ -30,7 +30,7 @@ int asyncde::ADEPointInfo::Print(FILE *stream) const {
   retvalue = fprintf(stream, "parent_id=%li\n", parent_id);
   retvalue |= fprintf(stream, " mask:");
   for (auto imask : mask)
-    retvalue |= fprintf(stream, " %ui", (unsigned int)imask);
+    retvalue |= fprintf(stream, " %u", (unsigned int)imask);
   retvalue |= fprintf(stream, "\n");
 
   return (retvalue < 0) ? -2 : 0;
