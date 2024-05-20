@@ -131,12 +131,12 @@ protected:
 
   virtual int FCrDefaultSettings();
 
-protected:
+  /// return 1 if the _point is selected
+  virtual int Selection(ADEPoint &_adepoint, int &ipidpos2replace) const;
+
+public:
   /// Iterator allocates a point specific to this iterator (internal variables)
   virtual Point *NewIntPoint() const override;
-
-  /// return 1 if the _point is selected
-  virtual int Selection(ADEPoint &_adepoint, int &ipidpos2replace);
 
   /// Add point to Iterator; X-coordinates according to internal variables
   /*
@@ -156,6 +156,9 @@ public:
 
   /// return population size
   unsigned int PopulationSize(int *restartcounter = nullptr) const;
+
+  /// find the parent point
+  ADEPoint *FindParent(const ADEPoint &_adepoint) const;
 
   /// restart algorithm with new population
   virtual int Restart(unsigned int _nparents) override;

@@ -32,7 +32,8 @@ asyncde::AsyncIterator::AsyncIterator(const Problem &_problem,
                                       const IteratorConfig *)
     : problem(&_problem), cfg(nullptr), status(nullptr), statusstopbits(0),
       statusrestartbits(0), statusrestartcounter(0), statusrecoverbits(0),
-      bestintpoint(nullptr), tmpintpoint(nullptr), tmpextpoint(nullptr) {
+      bestintpoint(nullptr), tmpintpoint(nullptr), tmpintoldpoint(nullptr),
+      tmpextpoint(nullptr) {
   status = new Status();
 }
 
@@ -41,6 +42,7 @@ asyncde::AsyncIterator::~AsyncIterator() {
   delete status;
   delete bestintpoint;
   delete tmpintpoint;
+  delete tmpintoldpoint;
   delete tmpextpoint;
 }
 

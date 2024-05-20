@@ -134,6 +134,19 @@ unsigned int asyncde::CDEIterator::PopulationSize(int *restartcounter) const {
   return adecfg->MinPopSize();
 }
 
+asyncde::ADEPoint *
+asyncde::CDEIterator::FindParent(const ADEPoint &_adepoint) const {
+  const long int parent_id = _adepoint.ADEInfo()->ParentId();
+  std::vector<long int>::const_iterator pidpos = std::lower_bound(
+      pid_key.cbegin(), pid_key.cbegin() + base_population_actual_size,
+      parent_id);
+
+  return (pidpos < pid_key.cbegin() + base_population_actual_size &&
+          *pidpos == parent_id)
+             ? base_population[pidpos - pid_key.cbegin()]
+             : 0;
+}
+
 int asyncde::CDEIterator::UpdateStatus() {
   statusstopbits |= status->FindStatus(cfg->criteriastop);
   statusrestartbits |= status->FindStatus(cfg->criteriarestart);
@@ -449,7 +462,8 @@ void asyncde::CDEIterator::UpdatePopulationSpread(const long int iposition) {
   }
 }
 
-int asyncde::CDEIterator::Selection(ADEPoint &_adepoint, int &ipidpos2replace) {
+int asyncde::CDEIterator::Selection(ADEPoint &_adepoint,
+                                    int &ipidpos2replace) const {
   ipidpos2replace = -1;
 
   if (base_population_actual_size < adecfg->MinPopSize())
@@ -466,11 +480,13 @@ int asyncde::CDEIterator::Selection(ADEPoint &_adepoint, int &ipidpos2replace) {
     break;
   case ADE_SELECTION_PARENT:
   default:
-    std::vector<long int>::iterator pidpos = std::lower_bound(
-        pid_key.begin(), pid_key.begin() + base_population_actual_size,
-        _adepoint.ADEInfo()->ParentId());
-    if (pidpos < pid_key.end())
-      ipidpos2replace = pidpos - pid_key.begin();
+    long int parent_id = _adepoint.ADEInfo()->ParentId();
+    std::vector<long int>::const_iterator pidpos = std::lower_bound(
+        pid_key.cbegin(), pid_key.cbegin() + base_population_actual_size,
+        parent_id);
+    if (pidpos < pid_key.cbegin() + base_population_actual_size &&
+        *pidpos == parent_id)
+      ipidpos2replace = pidpos - pid_key.cbegin();
     else
       return 0; // parent not found
   }
@@ -515,6 +531,10 @@ int asyncde::CDEIterator::AddIntPoint(Point &_point) {
   double newY = (*_point.Data()->Y())[0];
   status->Incr_nFE();
 
+  if (!tmpintoldpoint)
+    tmpintoldpoint = NewIntPoint();
+  ADEPoint *replacedpoint = nullptr;
+
   if (0 == base_population_actual_size) {
     iposition = 0;
     selected = 1;
@@ -526,7 +546,7 @@ int asyncde::CDEIterator::AddIntPoint(Point &_point) {
     pid_index_for_value_key[0] = 0;
     value_index_for_pid_key[0] = 0;
     base_population_actual_size++;
-    UpdateStatSums(_adepoint, 0);
+    UpdateStatSums(_adepoint, nullptr);
   } else {
     selected = Selection(*_adepoint, ipos2replace);
 
@@ -539,6 +559,8 @@ int asyncde::CDEIterator::AddIntPoint(Point &_point) {
         iposition = newpidpos - pid_key.begin();
       } else {
         iposition = ipos2replace;
+        tmpintoldpoint->Set(*base_population[ipos2replace]);
+        replacedpoint = dynamic_cast<ADEPoint *>(tmpintoldpoint);
         if (archive)
           archive->AddPoint(*base_population[ipos2replace]);
       }
@@ -603,10 +625,6 @@ int asyncde::CDEIterator::AddIntPoint(Point &_point) {
         }
       }
 
-      // update statistical and adaptive info
-      UpdateStatSums(_adepoint,
-                     (ipos2replace >= 0) ? base_population[ipos2replace] : 0);
-
       // set new values
       base_population[iposition]->Set(*_adepoint);
       pid_key[iposition] = _adepoint->ADEInfo()->ParentId();
@@ -616,6 +634,8 @@ int asyncde::CDEIterator::AddIntPoint(Point &_point) {
 
       if (ipos2replace < 0)
         base_population_actual_size++;
+
+      UpdateStatSums(_adepoint, replacedpoint);
     } // if (selected)
   }
 
@@ -730,14 +750,24 @@ int asyncde::CDEIterator::FillInTrialIntPoint(Point &_point, int maxnrestarts) {
       maxnrestarts--;
 
       fprintf(errors_stream,
-              "recursive call of FillInTrialIntPoint(), maxnrestarts=%i\n",
-              maxnrestarts);
+              "%li: recursive call of CDEIterator::FillInTrialIntPoint(), "
+              "maxnrestarts=%i\n",
+              status->nFE, maxnrestarts);
+      fprintf(stderr,
+              "statusstopbits=%x  statusrestartbits=%x  statusrecoverbits=%x\n",
+              statusstopbits, statusrestartbits, statusrecoverbits);
+      fprintf(stderr, "status->nfailedtrialpoint=%u\n",
+              status->nfailedtrialpoint);
 
       UpdateStatus();
+      fprintf(stderr,
+              "statusstopbits=%x  statusrestartbits=%x  statusrecoverbits=%x\n",
+              statusstopbits, statusrestartbits, statusrecoverbits);
+
       retvalue = FillInTrialIntPoint(_point, maxnrestarts);
     } else {
-      fprintf(errors_stream,
-              "error in asyncde::CDEIterator::FillInTrialPoint()\n");
+      fprintf(errors_stream, "%li: error in CDEIterator::FillInTrialPoint()\n",
+              status->nFE);
       status->error = 1;
       statusstopbits |= CRITERION_error;
     }
@@ -1316,13 +1346,27 @@ int asyncde::CDEIterator::FillInTrialIntADEPoint(ADEPoint &_point) {
   const std::vector<double> *xfeas;
 
   status->nprojfeas = 0;
-  unsigned int nmax_attempts = std::numeric_limits<unsigned int>::max();
+  status->nfailedtrialpoint = 0;
+  unsigned int nmax_projs = std::numeric_limits<unsigned int>::max();
   if ((cfg->criteriastop.statusbits & CRITERION_nprojfeas) != 0)
-    if (cfg->criteriastop.nprojfeas < nmax_attempts)
-      nmax_attempts = cfg->criteriastop.nprojfeas;
+    if (cfg->criteriastop.nprojfeas < nmax_projs)
+      nmax_projs = cfg->criteriastop.nprojfeas;
   if ((cfg->criteriarestart.statusbits & CRITERION_nprojfeas) != 0)
-    if (cfg->criteriarestart.nprojfeas < nmax_attempts)
-      nmax_attempts = cfg->criteriarestart.nprojfeas;
+    if (cfg->criteriarestart.nprojfeas < nmax_projs)
+      nmax_projs = cfg->criteriarestart.nprojfeas;
+  if ((cfg->criteriarecover.statusbits & CRITERION_nprojfeas) != 0)
+    if (cfg->criteriarecover.nprojfeas < nmax_projs)
+      nmax_projs = cfg->criteriarecover.nprojfeas;
+  unsigned int nmax_trials = std::numeric_limits<unsigned int>::max();
+  if ((cfg->criteriastop.statusbits & CRITERION_failedtrialpoint) != 0)
+    if (cfg->criteriastop.nfailedtrialpoint < nmax_trials)
+      nmax_trials = cfg->criteriastop.nfailedtrialpoint;
+  if ((cfg->criteriarestart.statusbits & CRITERION_failedtrialpoint) != 0)
+    if (cfg->criteriarestart.nfailedtrialpoint < nmax_trials)
+      nmax_trials = cfg->criteriarestart.nfailedtrialpoint;
+  if ((cfg->criteriarecover.statusbits & CRITERION_failedtrialpoint) != 0)
+    if (cfg->criteriarecover.nfailedtrialpoint < nmax_trials)
+      nmax_trials = cfg->criteriarecover.nfailedtrialpoint;
   long int tag;
 
 #ifdef LC_DEBUG
@@ -1349,8 +1393,15 @@ int asyncde::CDEIterator::FillInTrialIntADEPoint(ADEPoint &_point) {
     FillInMutantIntADEPoint(target_point, _point);
 
     tag = PointInfo::NOT_INITIALIZED_POINT;
-    if (CrossoverIntADEPoint(target_point, _point) < 0)
+    if (CrossoverIntADEPoint(target_point, _point) < 0) {
       tag = 0;
+      status->Incr_nFailedTrialPoint();
+      if (cfg->verbose >= 3 && status->nfailedtrialpoint > nmax_trials)
+        fprintf(errors_stream,
+                "%li: CDEIterator::FillInTrialIntADEPoint() failed to generate "
+                "new point in ntrials=%u of max=%u\n",
+                status->nFE, status->nfailedtrialpoint, nmax_trials);
+    }
 
     // project the trial vector into the feasible region
     if (1 != problem->IsXIntFeasible(*_point.Data()->X(), xexttmpvector)) {
@@ -1359,8 +1410,11 @@ int asyncde::CDEIterator::FillInTrialIntADEPoint(ADEPoint &_point) {
                   : BestIntPointCurrentPopulation()->Data()->X();
 #ifdef LC_DEBUG
       if (cfg->verbose >= 3) {
-        fprintf(messages_stream, "trial vector is infeasible\nproject point to "
-                                 "feasibility, select xfeas:\n");
+        fprintf(messages_stream,
+                "%li: CDEIterator::FillInTrialIntADEPoint(): trial vector is "
+                "infeasible\nproject point to "
+                "feasibility, select xfeas:\n",
+                status->nFE);
         for (double xcoord : *xfeas)
           fprintf(messages_stream, " %.3e", xcoord);
         fprintf(messages_stream, "\n");
@@ -1387,7 +1441,8 @@ int asyncde::CDEIterator::FillInTrialIntADEPoint(ADEPoint &_point) {
       IsContainsX(*_point.Data()->X(), tag);
     status->Incr_nProjFeas();
   } while ((tag != PointInfo::NOT_INITIALIZED_POINT) &&
-           status->nprojfeas < nmax_attempts);
+           status->nprojfeas <= nmax_projs &&
+           status->nfailedtrialpoint <= nmax_trials);
 
   if (tag == PointInfo::NOT_INITIALIZED_POINT) {
     _point.ADEInfoMutable()->SwitchToNewId();
@@ -1408,7 +1463,8 @@ int asyncde::CDEIterator::FillInTrialIntADEPoint(ADEPoint &_point) {
     _point.ADEInfoMutable()->SetStatus(POINTSTATUS_INFEASIBLE);
     //#ifdef LC_DEBUG
     fprintf(errors_stream,
-            "asyncde::CDEIterator::generate_ade_point() failed\n");
+            "%li: asyncde::CDEIterator::generate_ade_point() failed\n",
+            status->nFE);
     fprintf(errors_stream, "failed target point:\n");
     _point.Print(errors_stream);
     //#endif // LC_DEBUG
