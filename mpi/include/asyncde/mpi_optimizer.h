@@ -41,8 +41,8 @@ int mpi_worker_cycle(const unsigned int Xsize, const unsigned int Ysize,
 
 int mpi_master_cycle(const Problem &problem, const IteratorConfig &cfg,
                      long int &nevals, double &bestvalue,
-                     std::vector<double> *bestX, std::vector<double> *parerrlow = 0,
-                     std::vector<double> *parerrup = 0);
+                     std::vector<double> *bestX, std::vector<double> *parerrlow = nullptr,
+                     std::vector<double> *parerrup = nullptr);
 
 } // namespace asyncde
 

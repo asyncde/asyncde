@@ -119,7 +119,7 @@ int asyncde::mpi_master_cycle(const Problem &problem, const IteratorConfig &cfg,
 
   nevals = -1;
   bestvalue = std::numeric_limits<double>::max();
-  const Point *bestpoint = 0;
+  const Point *bestpoint = nullptr;
 
   int numtasks, rank, source, rc;
   std::vector<double> y(problem.Y()->size());
@@ -153,7 +153,7 @@ int asyncde::mpi_master_cycle(const Problem &problem, const IteratorConfig &cfg,
   retvalue = iterator->StatusStopBits();
 
   std::vector<Point *> buf_point;
-  buf_point.resize(numtasks, 0);
+  buf_point.resize(numtasks, nullptr);
   for (int dest = 1; dest < numtasks; dest++)
     buf_point[dest] = iterator->NewExtPoint();
 
@@ -284,9 +284,8 @@ int asyncde::mpi_master_cycle(const Problem &problem, const IteratorConfig &cfg,
       */
   }
 
-  for (std::vector<Point *>::iterator it = buf_point.begin();
-       it != buf_point.end(); it++)
-    delete *it;
+  for (auto point: buf_point)
+    delete point;
 
   delete iterator;
   delete tmp_point;
