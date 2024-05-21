@@ -83,7 +83,7 @@ int asyncde::ADEArchive::AddPoint(const asyncde::ADEPoint &_point) {
     population[inewpointpos] = tmp_point_ptr;
   }
 
-  if (0 != population[inewpointpos])
+  if (population[inewpointpos])
     population[inewpointpos]->Set(_point);
   else
     population[inewpointpos] = (ADEPoint *)_point.Clone();

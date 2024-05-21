@@ -106,11 +106,11 @@ protected:
   /// return true and assign the tag if x coordinate "equals" to coordinates of
   /// a point in this list.
   int IsContainsX(const std::vector<double> &x, long int &_id,
-                  Point **pointptr = 0) const;
+                  Point **pointptr = nullptr) const;
 
 public:
   /// return population size
-  unsigned int PopulationSize(int *restartcounter = 0) const;
+  unsigned int PopulationSize(int *restartcounter = nullptr) const;
 
   /// restart algorithm with new population
   virtual int Restart(unsigned int _nparents) override;

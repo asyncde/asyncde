@@ -99,7 +99,7 @@ int aderand1_example(asyncde::Functor1D &fitnessfunctor, unsigned int dim,
       problem, (asyncde::IteratorConfig *)&adesettings);
 
   asyncde::Point *tmp_point = iterator->NewExtPoint();
-  const asyncde::Point *bestpoint = 0;
+  const asyncde::Point *bestpoint = nullptr;
 
   for (iter = 0.; iter < maxfunevals; iter++) {
     iterator->FillInTrialExtPoint(*tmp_point);

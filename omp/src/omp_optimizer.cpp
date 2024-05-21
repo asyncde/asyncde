@@ -54,9 +54,9 @@ int asyncde::omp_optimization_cycle(const Problem &problem,
   const int nthreads = omp_get_max_threads();
   fprintf(stderr, "nthreads = %i\n", nthreads);
 
-  Point *tmp_point = 0;
-  std::vector<double> *Y = 0;
-  const Point *bestpoint = 0;
+  Point *tmp_point = nullptr;
+  std::vector<double> *Y = nullptr;
+  const Point *bestpoint = nullptr;
 
 #pragma omp parallel private(Y, tmp_point) shared(retvalue)
   {

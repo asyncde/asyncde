@@ -30,9 +30,9 @@ class Problem;
 
 int omp_optimization_cycle(const Problem &problem, const IteratorConfig &cfg,
                            double &maxfunevals, double &bestvalue,
-                           std::vector<double> *bestX = 0,
-                           std::vector<double> *parerrlow = 0,
-                           std::vector<double> *parerrup = 0);
+                           std::vector<double> *bestX = nullptr,
+                           std::vector<double> *parerrlow = nullptr,
+                           std::vector<double> *parerrup = nullptr);
 
 } // namespace asyncde
 

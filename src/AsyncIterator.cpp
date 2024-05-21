@@ -32,7 +32,8 @@ asyncde::AsyncIterator::AsyncIterator(const Problem &_problem,
                                       const IteratorConfig *)
     : problem(&_problem), cfg(nullptr), status(nullptr), statusstopbits(0),
       statusrestartbits(0), statusrestartcounter(0), statusrecoverbits(0),
-      bestintpoint(nullptr), tmpintpoint(nullptr), tmpextpoint(nullptr) {
+      bestintpoint(nullptr), tmpintpoint(nullptr), tmpintoldpoint(nullptr),
+      tmpextpoint(nullptr) {
   status = new Status();
 }
 
@@ -41,6 +42,7 @@ asyncde::AsyncIterator::~AsyncIterator() {
   delete status;
   delete bestintpoint;
   delete tmpintpoint;
+  delete tmpintoldpoint;
   delete tmpextpoint;
 }
 
@@ -114,8 +116,8 @@ int asyncde::AsyncIterator::MinimizeOpenMP() {
   statusstopbits = 0;
 
   int retvalue = 0;
-  Point *threadextpoint = 0;
-  std::vector<double> *Ythread = 0;
+  Point *threadextpoint = nullptr;
+  std::vector<double> *Ythread = nullptr;
 
 #pragma omp parallel private(Ythread, threadextpoint) shared(retvalue)
   {
@@ -216,19 +218,18 @@ int asyncde::AsyncIterator::ProjectPoint2Border(
    *  if (!IsXIntFeasible(xintfeas, xexttmparray))
    *    return -1;
    */
-  unsigned int ivar, nvars = problem->NFreeVariables();
+  unsigned int nvars = problem->NFreeVariables();
   int same;
-  double r = -1.0, rfeas = 0.0, rinfeas = 1.0;
-  double xiold;
+  double rfeas = 0.0, rinfeas = 1.0;
 
   xexttmparray = xint;
 
   do {
-    r = 0.5 * (rfeas + rinfeas);
+    double r = 0.5 * (rfeas + rinfeas);
 
     same = 1;
-    for (ivar = 0; ivar < nvars; ivar++) {
-      xiold = xint[ivar];
+    for (unsigned int ivar = 0; ivar < nvars; ivar++) {
+      double xiold = xint[ivar];
       xint[ivar] = xintfeas[ivar] + r * (xexttmparray[ivar] - xintfeas[ivar]);
       if (same && (0 != fuzzy_cmp(xint[ivar], xiold, problem->Tolerance())))
         same = 0;
@@ -251,18 +252,17 @@ int asyncde::AsyncIterator::ProjectPoint2Feasibility(
    *  if (!IsXIntFeasible(xintfeas, xexttmparray))
    *    return -1;
    */
-  unsigned int ivar, nvars = problem->NFreeVariables();
-  double r;
+  unsigned int nvars = problem->NFreeVariables();
   int same;
 
   do {
-    r = cfg->rnd->next(0.5, 1.0);
+    double r = cfg->rnd->next(0.5, 1.0);
 
-    for (ivar = 0; ivar < nvars; ivar++)
+    for (unsigned int ivar = 0; ivar < nvars; ivar++)
       xint[ivar] = xintfeas[ivar] + r * (xint[ivar] - xintfeas[ivar]);
 
     same = 1;
-    for (ivar = 0; ivar < nvars; ivar++)
+    for (unsigned ivar = 0; ivar < nvars; ivar++)
       if (0 != fuzzy_cmp(xint[ivar], xintfeas[ivar], problem->Tolerance())) {
         same = 0;
         break;

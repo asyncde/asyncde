@@ -62,6 +62,10 @@ protected:
   /// FillInTrialExtPoint()
   Point *tmpintpoint;
 
+  /// temporary point (internal variables) used by AddIntPoint() to
+  /// keep the replaced point
+  Point *tmpintoldpoint;
+
   /// temporary point (external variables) used by Minimize()
   Point *tmpextpoint;
 

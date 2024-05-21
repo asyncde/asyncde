@@ -27,7 +27,7 @@ int asyncde::Point::Print(FILE *stream) const {
   if (!stream)
     return -1;
 
-  int retvalue = fprintf(stream, "asyncde::Point(%p) ", this);
+  int retvalue = fprintf(stream, "asyncde::Point(%p)\n", this);
   retvalue |= info->Print(stream);
   retvalue |= data->Print(stream);
 
