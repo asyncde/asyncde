@@ -176,7 +176,7 @@ int asyncde::CDEIterator::lcResize(unsigned int _nparents) {
   vetopidsorted.reserve(_nparents);
 
   unsigned int oldsize = base_population.size();
-  base_population.resize(_nparents, 0);
+  base_population.resize(_nparents, nullptr);
   for (unsigned int ip = oldsize; ip < _nparents; ip++)
     base_population[ip] =
         new ADEPoint(*new PointData(*problem->IntVariables(), *problem->Y()),
@@ -695,7 +695,7 @@ int asyncde::CDEIterator::IsContainsX(const std::vector<double> &x,
                                       long int &_id, Point **pointptr) const {
   _id = PointInfo::NOT_INITIALIZED_POINT;
   if (pointptr)
-    *pointptr = 0;
+    *pointptr = nullptr;
 
   const double tolerance = problem->Tolerance();
   for (unsigned int ip = 0; ip < base_population_actual_size; ip++) {
@@ -847,7 +847,7 @@ int asyncde::CDEIterator::AssignVector(const int vector_type,
                                        const ADEPoint **_point) {
   unsigned int index;
   vector = 0;
-  const ADEPoint *newpoint = 0;
+  const ADEPoint *newpoint = nullptr;
   unsigned int poolsize = adecfg->MinPopSize() - vetovector.size();
   unsigned int maxsize;
 
