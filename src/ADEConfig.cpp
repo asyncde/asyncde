@@ -242,7 +242,7 @@ int asyncde::ADEConfig::Print(FILE *stream) const {
 
   switch (Fscaletype) {
   case ADE_FSCALE_jDE:
-    if (0 > (retvalue = fprintf(stream, "F type=%i in [%.5e, %.5e] tauF=%.5e\n",
+    if (0 > (retvalue = fprintf(stream, "F type=%i in [%.3e, %.3e] tauF=%.3e\n",
                                 Fscaletype, Fmin, Fmax, tauF)))
       return retvalue;
     break;
@@ -250,39 +250,39 @@ int asyncde::ADEConfig::Print(FILE *stream) const {
     if (0 >
         (retvalue = fprintf(
              stream,
-             "F=Cauchy(%.5e, %.5e) in [%.5e, %.5e] Fmu adapted with cF=%.5e\n",
+             "F=Cauchy(%.3e, %.3e) in [%.3e, %.3e] Fmu adapted with cF=%.3e\n",
              Fmu, Fsigma, Fmin, Fmax, Fc)))
       return retvalue;
     break;
   case ADE_FSCALE_Cauchy:
   default:
     if (0 >
-        (retvalue = fprintf(stream, "F=Cauchy(%.5e, %.5e) in [%.5e, %.5e]\n",
+        (retvalue = fprintf(stream, "F=Cauchy(%.3e, %.3e) in [%.3e, %.3e]\n",
                             Fmu, Fsigma, Fmin, Fmax)))
       return retvalue;
   }
 
   switch (CRupdatetype) {
   case ADE_CROSSOVER_UPDATE_ACM:
-    if (0 > (retvalue = fprintf(stream, "CR CM: tauCorr=%.5e wCR=%.5e\n",
-                                tauCorr, wCR)))
+    if (0 > (retvalue = fprintf(stream, "CR CM: tauCorr=%.3e wCmin=%.3e\n",
+                                tauCorr, wCmin)))
       return retvalue;
     break;
   case ADE_CROSSOVER_UPDATE_JADE:
     if (0 > (retvalue =
-                 fprintf(stream, "CR=N(%.5e, %.5e) in [%.5e, %.5e] cCR=%.5e\n",
+                 fprintf(stream, "CR=N(%.3e, %.3e) in [%.3e, %.3e] cCR=%.3e\n",
                          CRmu, CRsigma, CRmin, CRmax, CRc)))
       return retvalue;
     break;
   case ADE_CROSSOVER_UPDATE_jDE:
-    if (0 > (retvalue = fprintf(stream, "CR in [%.5e, %.5e] tauCR=%.5e\n",
+    if (0 > (retvalue = fprintf(stream, "CR in [%.3e, %.3e] tauCR=%.3e\n",
                                 CRmin, CRmax, tauCR)))
       return retvalue;
     break;
   case ADE_CROSSOVER_UPDATE_Cauchy:
   default:
     if (0 >
-        (retvalue = fprintf(stream, "CR=Cauchy(%.5e, %.5e) in [%.5e, %.5e]\n",
+        (retvalue = fprintf(stream, "CR=Cauchy(%.3e, %.3e) in [%.3e, %.3e]\n",
                             CRmu, CRsigma, CRmin, CRmax)))
       return retvalue;
     break;

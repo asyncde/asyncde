@@ -131,10 +131,10 @@ int asyncde::Variables::SetName(unsigned int ivar, const std::string _name) {
 
 int asyncde::Variables::Find(const std::string _name) const {
   int index = -1;
-  for (std::vector<std::string>::const_iterator itname = name.begin();
-       itname != name.end(); itname++)
+  for (std::vector<std::string>::const_iterator itname = name.cbegin();
+       itname != name.cend(); itname++)
     if (_name == *itname) {
-      index = itname - name.begin();
+      index = itname - name.cbegin();
       break;
     }
 
@@ -169,9 +169,8 @@ int asyncde::Variables::SetX(const std::vector<double> &xnew) {
 unsigned int asyncde::Variables::FindNFreeVariables() const {
   unsigned int nfree = 0;
 
-  for (std::vector<int>::const_iterator itfreevar = freevar.begin();
-       itfreevar != freevar.end(); itfreevar++)
-    if (1 == *itfreevar)
+  for (int vfree : freevar)
+    if (1 == vfree)
       nfree++;
 
   return nfree;

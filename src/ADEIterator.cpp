@@ -53,7 +53,7 @@
 asyncde::ADEIterator::ADEIterator(const Problem &_problem,
                                   const IteratorConfig *_cfg)
     : CDEIterator(_problem, _cfg), corr_n(0), corr_counter(0),
-      corr_counter_maxfactor(2), acm_first(1), corr_reliable(0) {
+      corr_counter_maxfactor(2), acm_counter(0), corr_reliable(0) {
   if (nfreeparams > 0) {
     corr_xi.resize(nfreeparams);
     corr_xi2.resize(nfreeparams);
@@ -93,7 +93,7 @@ int asyncde::ADEIterator::CrossoverMaskCorrMatrix(
 
   for (unsigned int ivar = 0; ivar < nfreeparams; ivar++) {
     if (ivar == corr_index) {
-      mask[ivar] = 1;
+      mask[ivar] = 2;
       continue;
     }
 
@@ -135,33 +135,27 @@ int asyncde::ADEIterator::CrossoverMask(const ADEPoint &target_point,
 }
 
 int asyncde::ADEIterator::ResetSampleCorrMatrix() {
-  unsigned int maxsize = (nfreeparams * (nfreeparams - 1)) / 2;
+  const unsigned int maxsize = (nfreeparams * (nfreeparams - 1)) / 2;
 
   corr_n = 0;
   corr_counter = 0;
 
-  for (unsigned int i = 0; i < nfreeparams; i++) {
-    corr_xi[i] = 0.0;
-    corr_xi2[i] = 0.0;
-    scm_xii[i] = 0.0;
-  }
-  for (unsigned int j = 0; j < maxsize; j++) {
-    corr_xij[j] = 0.0;
-    scm_xij[j] = 0.0;
-  }
+  std::fill(corr_xi.begin(), corr_xi.begin() + nfreeparams, 0.0);
+  std::fill(corr_xi2.begin(), corr_xi2.begin() + nfreeparams, 0.0);
+  std::fill(corr_xij.begin(), corr_xij.begin() + maxsize, 0.0);
+
+  std::fill(scm_xii.begin(), scm_xii.begin() + nfreeparams, 0.0);
+  std::fill(scm_xij.begin(), scm_xij.begin() + maxsize, 0.0);
 
   return 0;
 }
 
 int asyncde::ADEIterator::ResetAdaptiveCorrMatrix() {
-  unsigned int maxsize = (nfreeparams * (nfreeparams - 1)) / 2;
+  const unsigned int maxsize = (nfreeparams * (nfreeparams - 1)) / 2;
 
-  acm_first = 1;
-  for (unsigned int i = 0; i < nfreeparams; i++)
-    acm_xii[i] = 0.0;
-
-  for (unsigned int j = 0; j < maxsize; j++)
-    acm_xij[j] = 0.0;
+  acm_counter = 0;
+  std::fill(acm_xii.begin(), acm_xii.begin() + nfreeparams, 0.0);
+  std::fill(acm_xij.begin(), acm_xij.begin() + maxsize, 0.0);
 
   return ResetSampleCorrMatrix();
 }
@@ -176,7 +170,7 @@ int asyncde::ADEIterator::UpdateStatSums(const ADEPoint *new_point,
                                                        *old_point->Data()->X())
                     : UpdateSampleCorrMatrixSums(*new_point->Data()->X(), 1.0);
 
-  if (old_point) // population is complete
+  if (base_population_actual_size == adecfg->MinPopSize()) // population is complete
     UpdateCorrMatrices();
 
   return retvalue;
@@ -230,29 +224,27 @@ int asyncde::ADEIterator::UpdateSampleCorrMatrixSumsByDiff(
 
 int asyncde::ADEIterator::CalcSampleCorrMatrixFromSums() {
   if (corr_n < 2) {
-    for (unsigned int i = 0; i < nfreeparams; i++) {
-      scm_xii[i] = 0.0;
-      unsigned int index = CorrXijIndex(i, i + 1);
-      for (unsigned j = i + 1; j < nfreeparams; j++) {
-        scm_xij[index] = 0.0;
-        index++;
-      }
-    }
+    const unsigned int maxsize = (nfreeparams * (nfreeparams - 1)) / 2;
+    std::fill(scm_xii.begin(), scm_xii.begin() + nfreeparams, 0.0);
+    std::fill(scm_xij.begin(), scm_xij.begin() + maxsize, 0.0);
+
     return -1;
   }
 
-  double denom = 1.0 / sqrt(corr_n * (corr_n - 1));
   for (unsigned int i = 0; i < nfreeparams; i++) {
-    const double v = corr_n * corr_xi2[i] - corr_xi[i] * corr_xi[i];
-    scm_xii[i] = (v > 0.0) ? denom * sqrt(v) : 0.0;
+    double v = corr_n * corr_xi2[i] - corr_xi[i] * corr_xi[i];
+    scm_xii[i] = (v > 0.0)
+                     ? sqrt(v)
+                     : 0.0; // to be normalised on N_p later inside this method
   }
 
   for (unsigned int i = 0; i < nfreeparams; i++) {
     unsigned int index = CorrXijIndex(i, i + 1);
     for (unsigned int j = i + 1; j < nfreeparams; j++) {
-      double v = (corr_n - 1.0) * scm_xii[i] * scm_xii[j];
-      if (v > 0.0) {
-        v = (corr_xij[index] - corr_xi[i] * corr_xi[j] / corr_n) / v;
+      double denom = scm_xii[i] * scm_xii[j];
+      double v;
+      if (denom > 0.0) {
+        v = (corr_n * corr_xij[index] - corr_xi[i] * corr_xi[j]) / denom;
         if (v > 1.0)
           v = 1.0;
         else if (v < -1.0)
@@ -263,6 +255,10 @@ int asyncde::ADEIterator::CalcSampleCorrMatrixFromSums() {
       index++;
     }
   }
+
+  const double denom = 1.0 / sqrt(corr_n * (corr_n - 1));
+  for (double &v : scm_xii)
+    v *= denom;
 
   return 0;
 }
@@ -324,31 +320,29 @@ int asyncde::ADEIterator::UpdateCorrMatrices() {
 int asyncde::ADEIterator::CalculateAdaptiveCorrMatrix() {
   int retvalue = 0;
 
-  const double wCR = (acm_first) ? 1.0 : adecfg->wCR;
+  const double wC = std::max(1.0 / (1 + acm_counter), adecfg->wCmin);
 
   for (unsigned int i = 0; i < nfreeparams; i++) {
-    acm_xii[i] += wCR * (scm_xii[i] - acm_xii[i]);
+    acm_xii[i] += wC * (scm_xii[i] - acm_xii[i]);
 
     unsigned int index = CorrXijIndex(i, i + 1);
     for (unsigned int j = i + 1; j < nfreeparams; j++) {
-      acm_xij[index] += wCR * (scm_xij[index] - acm_xij[index]);
+      acm_xij[index] += wC * (scm_xij[index] - acm_xij[index]);
       index++;
     }
   }
 
-  acm_first = 0;
+  acm_counter++;
 
   return retvalue;
 }
 
 int asyncde::ADEIterator::TestCorrReliable() const {
-  unsigned int ipop;
-  unsigned int modified = 0;
-
   if (base_population_actual_size != adecfg->MinPopSize())
     return -1;
 
-  for (ipop = 0; ipop < base_population_actual_size; ipop++)
+  unsigned int modified = 0;
+  for (unsigned int ipop = 0; ipop < base_population_actual_size; ipop++)
     if (base_population[ipop]->Info()->Id() >
         base_population[ipop]->ADEInfo()->ParentId())
       modified++;

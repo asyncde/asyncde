@@ -93,12 +93,13 @@ int asyncde::AsyncIterator::Minimize() {
              (*bestpoint->Data()->Y())[0]);
       problem->ConvertInt2Ext(*bestpoint->Data()->X(),
                               *tmpextpoint->DataMutable()->Xmutable());
-      for (std::vector<double>::const_iterator it =
-               tmpextpoint->Data()->X()->begin();
-           it != tmpextpoint->Data()->X()->end(); it++) {
-        if (it != tmpextpoint->Data()->X()->begin())
+      int first = 1;
+      for (double x : *tmpextpoint->Data()->X()) {
+        if (first) {
           printf("  ");
-        printf("%.15e", *it);
+          first = 0;
+        }
+        printf("%.15e", x);
       }
       printf("\n");
     }
@@ -160,12 +161,13 @@ int asyncde::AsyncIterator::MinimizeOpenMP() {
              (*bestpoint->Data()->Y())[0]);
       problem->ConvertInt2Ext(*bestpoint->Data()->X(),
                               *tmpextpoint->DataMutable()->Xmutable());
-      for (std::vector<double>::const_iterator it =
-               tmpextpoint->Data()->X()->begin();
-           it != tmpextpoint->Data()->X()->end(); it++) {
-        if (it != tmpextpoint->Data()->X()->begin())
+      int first = 1;
+      for (double x : *tmpextpoint->Data()->X()) {
+        if (first) {
           printf("  ");
-        printf("%.15e", *it);
+          first = 0;
+        }
+        printf("%.15e", x);
       }
       printf("\n");
     }
