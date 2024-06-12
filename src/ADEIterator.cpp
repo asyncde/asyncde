@@ -53,7 +53,7 @@
 asyncde::ADEIterator::ADEIterator(const Problem &_problem,
                                   const IteratorConfig *_cfg)
     : CDEIterator(_problem, _cfg), corr_n(0), corr_counter(0),
-      corr_counter_maxfactor(2), acm_first(1), corr_reliable(0) {
+      corr_counter_maxfactor(2), acm_counter(0), corr_reliable(0) {
   if (nfreeparams > 0) {
     corr_xi.resize(nfreeparams);
     corr_xi2.resize(nfreeparams);
@@ -93,7 +93,7 @@ int asyncde::ADEIterator::CrossoverMaskCorrMatrix(
 
   for (unsigned int ivar = 0; ivar < nfreeparams; ivar++) {
     if (ivar == corr_index) {
-      mask[ivar] = 1;
+      mask[ivar] = 2;
       continue;
     }
 
@@ -156,7 +156,7 @@ int asyncde::ADEIterator::ResetSampleCorrMatrix() {
 int asyncde::ADEIterator::ResetAdaptiveCorrMatrix() {
   unsigned int maxsize = (nfreeparams * (nfreeparams - 1)) / 2;
 
-  acm_first = 1;
+  acm_counter = 0;
   for (unsigned int i = 0; i < nfreeparams; i++)
     acm_xii[i] = 0.0;
 
@@ -324,19 +324,19 @@ int asyncde::ADEIterator::UpdateCorrMatrices() {
 int asyncde::ADEIterator::CalculateAdaptiveCorrMatrix() {
   int retvalue = 0;
 
-  const double wCR = (acm_first) ? 1.0 : adecfg->wCR;
+  const double wC = std::max(1.0 / (1 + acm_counter), adecfg->wCmin);
 
   for (unsigned int i = 0; i < nfreeparams; i++) {
-    acm_xii[i] += wCR * (scm_xii[i] - acm_xii[i]);
+    acm_xii[i] += wC * (scm_xii[i] - acm_xii[i]);
 
     unsigned int index = CorrXijIndex(i, i + 1);
     for (unsigned int j = i + 1; j < nfreeparams; j++) {
-      acm_xij[index] += wCR * (scm_xij[index] - acm_xij[index]);
+      acm_xij[index] += wC * (scm_xij[index] - acm_xij[index]);
       index++;
     }
   }
 
-  acm_first = 0;
+  acm_counter++;
 
   return retvalue;
 }

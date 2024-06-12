@@ -63,7 +63,7 @@ public:
   std::vector<double> scm_xij; // [nfreeparams, nfreeparams] use corr_index
 
   /// adaptive CM
-  int acm_first;
+  long int acm_counter;
   std::vector<double> acm_xii; // [nfreeparams]
   std::vector<double> acm_xij; // [nfreeparams, nfreeparams] use corr_index
 
@@ -78,9 +78,9 @@ protected:
   virtual int FCrDefaultSettings() override;
 
 public:
-  unsigned int CorrXijIndex(unsigned int i, unsigned int j) const {
-    return (i < j) ? nfreeparams * i + j - ((i + 1) * (i + 2)) / 2
-                   : nfreeparams * j + i - ((j + 1) * (j + 2)) / 2;
+  unsigned int CorrXijIndex(unsigned int id, unsigned int jd) const {
+    return (id < jd) ? nfreeparams * id + jd - ((id + 1) * (id + 2)) / 2
+                     : nfreeparams * jd + id - ((jd + 1) * (jd + 2)) / 2;
   }
 
   virtual int UpdateStatSums(const ADEPoint *new_point,
