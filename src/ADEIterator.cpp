@@ -170,7 +170,8 @@ int asyncde::ADEIterator::UpdateStatSums(const ADEPoint *new_point,
                                                        *old_point->Data()->X())
                     : UpdateSampleCorrMatrixSums(*new_point->Data()->X(), 1.0);
 
-  if (base_population_actual_size == adecfg->MinPopSize()) // population is complete
+  if (base_population_actual_size ==
+      adecfg->MinPopSize()) // population is complete
     UpdateCorrMatrices();
 
   return retvalue;
