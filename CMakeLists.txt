@@ -19,7 +19,7 @@ if(UNIX)
 #  set(CMAKE_CXX_COMPILER clang++)
   set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED on)
-  set(CMAKE_CXX_FLAGS "-g -fPIC -pthread")
+  set(CMAKE_CXX_FLAGS "-g")
   add_compile_options(-O3) # optimization
   add_compile_options(-Wall -Wshadow -Woverloaded-virtual) # warnings
 #  add_compile_options(-Werror) # no -Werror with openmpi
@@ -50,7 +50,6 @@ add_subdirectory(include)
 # OMP multi-threading
 if (OPENMP_FOUND)
   add_subdirectory(omp)
-#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif(OPENMP_FOUND)
 
 # MPI part
