@@ -17,6 +17,10 @@
  see https://www.gnu.org/licenses/.
 */
 
+#include <limits>
+#include <mutex>
+#include <thread>
+
 #include "asyncde/AsyncIterator.h"
 
 #include "asyncde/IteratorConfig.h"
@@ -108,6 +112,87 @@ int asyncde::AsyncIterator::Minimize() {
   return retvalue;
 }
 
+int asyncde::AsyncIterator::MinimizeMT(size_t nthreads) {
+  const Functor1D *fitnessfunctor = problem->ObjectiveFunctor1D();
+  if (!fitnessfunctor) {
+    statusstopbits = CRITERION_error;
+    return -1;
+  }
+  statusstopbits = 0;
+
+  int retvalue = 0;
+  if (nthreads < 1)
+    nthreads = std::thread::hardware_concurrency();
+  if (cfg->verbose)
+    fprintf(stderr, "nthreads = %li\n", nthreads);
+
+  std::vector<std::thread> threadpool;
+  threadpool.reserve(nthreads);
+  std::mutex mutx;
+
+  for (size_t ithr = 0; ithr < nthreads; ++ithr)
+    threadpool.emplace_back([&]() {
+      Point *threadextpoint = nullptr;
+      std::vector<double> *Y = nullptr;
+      {
+        std::unique_lock<std::mutex> lck(mutx);
+        threadextpoint = NewExtPoint();
+        Y = new std::vector<double>(problem->Y()->size());
+        (*Y)[0] = std::numeric_limits<double>::max();
+      }
+
+      while (retvalue == 0) {
+        {
+          std::unique_lock<std::mutex> lck(mutx);
+          FillInTrialExtPoint(*threadextpoint);
+        }
+
+        if (threadextpoint->Info()->Id() != POINTSTATUS_UNDEFINED) {
+          (*fitnessfunctor)(*threadextpoint->Data()->X(), *Y);
+          threadextpoint->SetY(Y);
+        }
+
+        if (retvalue == 0 &&
+            threadextpoint->Info()->Id() != POINTSTATUS_UNDEFINED) {
+          std::unique_lock<std::mutex> lck(mutx);
+          AddExtPoint(*threadextpoint);
+          retvalue |= StatusStopBits();
+        }
+      }
+
+      {
+        std::unique_lock<std::mutex> lck(mutx);
+        delete threadextpoint;
+        delete Y;
+      }
+    });
+
+  for (size_t ithr = 0; ithr < threadpool.size(); ++ithr)
+    threadpool[ithr].join();
+
+  if (cfg->verbose) {
+    const Point *bestpoint = BestIntPoint();
+    if (bestpoint) {
+      printf("nevals = %li  bestvalue = %.15e\n", NFE(),
+             (*bestpoint->Data()->Y())[0]);
+      problem->ConvertInt2Ext(*bestpoint->Data()->X(),
+                              *tmpextpoint->DataMutable()->Xmutable());
+      int first = 1;
+      for (double x : *tmpextpoint->Data()->X()) {
+        if (first) {
+          printf("  ");
+          first = 0;
+        }
+        printf("%.15e", x);
+      }
+      printf("\n");
+    }
+  }
+
+  return retvalue;
+}
+
+/*
 int asyncde::AsyncIterator::MinimizeOpenMP() {
   const Functor1D *fitnessfunctor = problem->ObjectiveFunctor1D();
   if (!fitnessfunctor) {
@@ -175,6 +260,7 @@ int asyncde::AsyncIterator::MinimizeOpenMP() {
 
   return retvalue;
 }
+*/
 
 int asyncde::AsyncIterator::AddExtPoint(const Point &_point) {
   if (!tmpintpoint)

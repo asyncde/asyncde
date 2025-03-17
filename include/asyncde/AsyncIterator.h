@@ -87,7 +87,9 @@ public:
   int Minimize();
 
   /// optimization loop (multithread, objective function has to be thread-safe)
-  int MinimizeOpenMP();
+  int MinimizeMT(
+      size_t ntrhreads = 0); /* through std::thread according to C++17 */
+  //  int MinimizeOpenMP();
 
   /// Return a read-only reference to the best point
   const Point *BestIntPoint() const { return bestintpoint; }
