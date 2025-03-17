@@ -19,7 +19,6 @@
 
 #include <limits>
 #include <mutex>
-#include <shared_mutex>
 #include <thread>
 
 #include "asyncde/AsyncIterator.h"
